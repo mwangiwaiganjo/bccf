@@ -3,8 +3,10 @@ import 'package:bccf/componets/password.dart';
 import 'package:bccf/signup/signup.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final _formkey = GlobalKey<FormState>();
+final supabase = Supabase.instance.client;
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -16,6 +18,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final emailcontroller = TextEditingController();
   final passwordcontroller = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,9 +94,19 @@ class _LoginState extends State<Login> {
                   height: 15,
                 ),
                 ElevatedButton(
-                  onPressed: () {
-            
-                    _formkey.currentState!.validate();
+                  onPressed: () async {
+                    if (_formkey.currentState!.validate()) {
+                      final email = emailcontroller.text;
+                      final password = passwordcontroller.text;
+                      try {
+                        await supabase.auth.signInWithPassword(
+                            password: password, email: email);
+                      } catch (e) {
+                        final snackbar = SnackBar(content: Text(e.toString()));
+                        ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                        print(e);
+                      }
+                    } else {}
                   },
                   child: Text(
                     "sign in".toUpperCase(),
